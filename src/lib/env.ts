@@ -31,7 +31,7 @@ export const env = createEnv({
     CORS_ALLOWED_DOMAIN: z.string().url(),
     DEFAULT_TX_CONFIRMATIONS: z.coerce.number().default(6),
     IS_DEVELOPMENT: BooleanOrBooleanStringSchema,
-    MONGODB_URI: z.string().url(),
+    CONVEX_URL: z.string().url(),
     PORT: z.coerce.number(),
     SENTRY_AUTH_TOKEN: z.string().optional(),
     SENTRY_DSN: z.string().optional(),

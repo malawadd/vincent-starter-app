@@ -4,7 +4,7 @@ import { getAppInfo, getPKPInfo, isAppUser } from '@lit-protocol/vincent-app-sdk
 
 import { ScheduleIdentitySchema, ScheduleParamsSchema } from './schema';
 import { VincentAuthenticatedRequest } from './types';
-import * as jobManager from '../agenda/jobs/dcaSwapJobManager';
+import * as jobManager from '../convex/jobManager';
 
 const { cancelJob, createJob, disableJob, editJob, enableJob, listJobsByEthAddress } = jobManager;
 

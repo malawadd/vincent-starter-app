@@ -17,11 +17,6 @@
     "startApiServer": "node ./dist/bin/apiServer.mjs",
     "clean": "pnpm exec rm -Rf node_modules dist",
     "mintRli": "pnpm dotenvx run -- pnpm tsx ./src/bin/mintRLINft.ts",
-    "mongo:build": "docker build -f Dockerfile.mongo -t local-mongo .",
-    "mongo:up": "mkdir -p data && (docker run -d --name mongo --env-file .env -p 27017:27017 -v \"$PWD/data:/data/db\" local-mongo || docker start mongo)",
-    "mongo:stop": "docker stop mongo || true",
-    "mongo:rm": "docker rm -f mongo || true",
-    "mongo:logs": "docker logs -f mongo",
     "sentry:sourcemaps": "pnpm dotenvx run -- sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT ./dist && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT ./dist"
   },
   "repository": {
@@ -58,14 +53,13 @@
     "@sentry/cli": "^2.52.0",
     "@sentry/node": "^10.5.0",
     "@t3-oss/env-core": "^0.12.0",
-    "@whisthub/agenda": "^7.0.2",
     "consola": "^3.4.2",
+    "convex": "^1.28.0",
     "cors": "^2.8.5",
     "dataloader": "^2.2.3",
     "did-jwt": "^8.0.9",
     "express": "^4.21.2",
     "helmet": "^8.1.0",
-    "mongoose": "^8.10.1",
     "node-cache": "^5.1.2",
     "semver": "^7.7.2",
     "tslib": "^2.8.1"

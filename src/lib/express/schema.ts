@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import { z } from 'zod';
 
 export const ScheduleParamsSchema = z.object({
@@ -22,8 +21,7 @@ export const ScheduleParamsSchema = z.object({
     .transform((val) => parseFloat(val)),
   purchaseIntervalHuman: z.string(),
 });
+
 export const ScheduleIdentitySchema = z.object({
-  scheduleId: z
-    .string()
-    .refine((val) => Types.ObjectId.isValid(val), { message: 'Invalid ObjectId' }),
+  scheduleId: z.string().min(1, { message: 'Schedule ID is required' }),
 });

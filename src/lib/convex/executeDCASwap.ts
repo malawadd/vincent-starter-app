@@ -1,11 +1,11 @@
 import * as Sentry from '@sentry/node';
-import { Job } from '@whisthub/agenda';
 import consola from 'consola';
 import { ethers } from 'ethers';
+import { Id } from '../../../convex/_generated/dataModel';
 
 import { IRelayPKP } from '@lit-protocol/types';
 
-import { type AppData, assertPermittedVersion } from '../jobVersion';
+import { type AppData, assertPermittedVersion } from '../utils/jobVersion';
 import {
   alchemyGasSponsor,
   alchemyGasSponsorApiKey,
@@ -14,17 +14,17 @@ import {
   getERC20Contract,
   getUserPermittedVersion,
   handleOperationExecution,
-} from './utils';
+} from '../utils/executeDCASwap/utils';
 import {
   getErc20ApprovalToolClient,
   getSignedUniswapQuote,
   getUniswapToolClient,
-} from './vincentAbilities';
-import { env } from '../../../env';
-import { normalizeError } from '../../../error';
-import { PurchasedCoin } from '../../../mongo/models/PurchasedCoin';
+} from '../utils/executeDCASwap/vincentAbilities';
+import { env } from '../env';
+import { normalizeError } from '../error';
+import { getConvexClient } from './client';
+import { api } from '../../../convex/_generated/api';
 
-export type JobType = Job<JobParams>;
 export type JobParams = {
   app: AppData;
   name: string;
@@ -60,13 +60,12 @@ async function addUsdcApproval({
     rpcUrl: BASE_RPC_URL,
     spenderAddress: BASE_UNISWAP_V3_ROUTER,
     tokenAddress: BASE_USDC_ADDRESS,
-    tokenAmount: usdcAmount.mul(5).toString(), // Approve 5x the amount to spend so we don't wait for approval tx's every time we run
+    tokenAmount: usdcAmount.mul(5).toString(),
   };
   const approvalContext = {
     delegatorPkpEthAddress: ethAddress,
   };
 
-  // Running precheck to prevent sending approval tx if not needed or will fail
   const approvalPrecheckResult = await erc20ApprovalToolClient.precheck(
     approvalParams,
     approvalContext
@@ -74,11 +73,9 @@ async function addUsdcApproval({
   if (!approvalPrecheckResult.success) {
     throw new Error(`ERC20 approval tool precheck failed: ${approvalPrecheckResult}`);
   } else if (approvalPrecheckResult.result.alreadyApproved) {
-    // No need to send tx, allowance is already at that amount
     return undefined;
   }
 
-  // Sending approval tx
   const approvalExecutionResult = await erc20ApprovalToolClient.execute(
     approvalParams,
     approvalContext
@@ -135,19 +132,26 @@ async function handleSwapExecution({
   return swapExecutionResult.result.swapTxHash as `0x${string}`;
 }
 
-export async function executeDCASwap(job: JobType, sentryScope: Sentry.Scope): Promise<void> {
+export async function executeDCASwap(
+  scheduleId: Id<'schedules'>,
+  jobData: {
+    app: AppData;
+    pkpInfo: IRelayPKP;
+    purchaseAmount: number;
+  },
+  sentryScope: Sentry.Scope
+): Promise<void> {
+  const convex = getConvexClient();
+
   try {
     const {
-      _id,
-      data: {
-        app,
-        pkpInfo: { ethAddress, publicKey },
-        purchaseAmount,
-      },
-    } = job.attrs;
+      app,
+      pkpInfo: { ethAddress, publicKey },
+      purchaseAmount,
+    } = jobData;
 
     consola.log('Starting DCA swap job...', {
-      _id,
+      scheduleId,
       ethAddress,
       purchaseAmount,
     });
@@ -177,7 +181,6 @@ export async function executeDCASwap(job: JobType, sentryScope: Sentry.Scope): P
       );
     }
 
-    // Run the saved version or update to the currently permitted one if version is compatible
     const appVersionToRun = assertPermittedVersion(app.version, userPermittedAppVersion);
     sentryScope.addBreadcrumb({
       data: {
@@ -186,11 +189,12 @@ export async function executeDCASwap(job: JobType, sentryScope: Sentry.Scope): P
         userPermittedAppVersion,
       },
     });
+
     if (appVersionToRun !== app.version) {
-      // User updated the permitted app version after creating the job, so we need to update it
-      // eslint-disable-next-line no-param-reassign
-      job.attrs.data.app = { ...job.attrs.data.app, version: appVersionToRun };
-      await job.save();
+      await convex.mutation(api.schedules.update, {
+        scheduleId,
+        appVersion: appVersionToRun,
+      });
     }
 
     consola.log('Job details', {
@@ -232,23 +236,17 @@ export async function executeDCASwap(job: JobType, sentryScope: Sentry.Scope): P
       },
     });
 
-    // Create a purchase record with all required fields
-    const purchase = new PurchasedCoin({
+    await convex.mutation(api.purchases.create, {
       ethAddress,
       coinAddress: BASE_WBTC_ADDRESS,
-      name: 'wBTC',
       purchaseAmount: purchaseAmount.toFixed(2),
-      scheduleId: _id,
+      scheduleId,
       symbol: 'wBTC',
       txHash: swapHash,
     });
-    await purchase.save();
 
     consola.debug(`Successfully purchased ${purchaseAmount} USDC of wBTC at tx hash ${swapHash}`);
   } catch (e) {
-    // Catch-and-rethrow is usually an antipattern, but Agenda doesn't log failed job reasons to console
-    // so this is our chance to log the job failure details using Consola before we throw the error
-    // to Agenda, which will write the failure reason to the Agenda job document in Mongo
     const err = normalizeError(e);
     sentryScope.captureException(err);
     consola.error(err.message, err.stack);
