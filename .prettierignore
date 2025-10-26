@@ -1,5 +1,0 @@
-/data
-/node_modules
-/packages/**/dist
-/packages/**/node_modules
-pnpm-lock.yaml

@@ -1,6 +1,0 @@
-packages:
-  - packages/*
-onlyBuiltDependencies:
-  - bun
-  - esbuild
-  - protobufjs
