@@ -1,10 +1,7 @@
 declare global {
   interface ZendeskSettings {
     webWidget?: {
-      color?: {
-        theme?: string;
-        launcherText?: string;
-      };
+      color?: { theme?: string };
       launcher?: {
         label?: Record<string, string>;
         mobile?: { labelVisible?: boolean };
@@ -35,7 +32,6 @@ export function initZendesk() {
     webWidget: {
       color: {
         theme: '#FF4205',
-        launcherText: '#FFFFFF',
       },
       launcher: {
         label: {
