@@ -11,8 +11,7 @@ export default defineSchema({
     txHash: v.optional(v.string()),
   })
     .index('by_ethAddress', ['ethAddress'])
-    .index('by_scheduleId', ['scheduleId'])
-    .index('by_ethAddress_and_createdAt', ['ethAddress', '_creationTime']),
+    .index('by_scheduleId', ['scheduleId']),
 
   schedules: defineTable({
     appId: v.number(),

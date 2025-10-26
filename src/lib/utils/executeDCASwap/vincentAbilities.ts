@@ -1,4 +1,4 @@
-import { getVincentAbilityClient } from '@lit-protocol/vincent-scaffold-sdk';
+import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import { env } from '../../env';
 
 const { VINCENT_DELEGATEE_PRIVATE_KEY, CHRONICLE_YELLOWSTONE_RPC } = env;

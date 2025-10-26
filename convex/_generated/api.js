@@ -1,22 +1,23 @@
-export const api = {
-  purchases: {
-    listByEthAddress: { _name: 'purchases:listByEthAddress' },
-    create: { _name: 'purchases:create' },
-  },
-  schedules: {
-    listByEthAddress: { _name: 'schedules:listByEthAddress' },
-    getById: { _name: 'schedules:getById' },
-    findByEthAddressAndId: { _name: 'schedules:findByEthAddressAndId' },
-    create: { _name: 'schedules:create' },
-    update: { _name: 'schedules:update' },
-    disable: { _name: 'schedules:disable' },
-    enable: { _name: 'schedules:enable' },
-    remove: { _name: 'schedules:remove' },
-    getDueSchedules: { _name: 'schedules:getDueSchedules' },
-    lockSchedule: { _name: 'schedules:lockSchedule' },
-    unlockSchedule: { _name: 'schedules:unlockSchedule' },
-    updateAfterExecution: { _name: 'schedules:updateAfterExecution' },
-  },
-};
+/* eslint-disable */
+/**
+ * Generated `api` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
 
-export const internal = {};
+import { anyApi, componentsGeneric } from "convex/server";
+
+/**
+ * A utility for referencing Convex functions in your app's API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+export const api = anyApi;
+export const internal = anyApi;
+export const components = componentsGeneric();

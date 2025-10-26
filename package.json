@@ -11,6 +11,7 @@
     "test": "pnpm jest",
     "lint": "pnpm eslint ./src",
     "build": "pnpm unbuild",
+    "convex": "convex dev",
     "dev": "pnpm dotenvx run -- pnpm tsx watch src/bin/serverWorker.ts",
     "start": "node ./dist/bin/serverWorker.mjs",
     "startWorker": "node ./dist/bin/jobWorker.mjs",
@@ -73,6 +74,7 @@
     "ethers": "^5.8.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.3.0",
+    "tsx": "^4.20.6",
     "unbuild": "^3.5.0",
     "zod": "^3.25.76"
   }

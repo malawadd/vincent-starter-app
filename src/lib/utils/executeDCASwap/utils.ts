@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { env } from '../../env';
-import { getVincentContractSdk } from '@lit-protocol/vincent-contracts-sdk';
-
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+import { readOnlySigner } from './signer';
 const { ALCHEMY_API_KEY, ALCHEMY_POLICY_ID } = env;
 
 export const alchemyGasSponsor = !!ALCHEMY_API_KEY && !!ALCHEMY_POLICY_ID;
@@ -32,16 +32,18 @@ export async function balanceOf(
 }
 
 export async function getUserPermittedVersion(params: {
-  ethAddress: string;
   appId: number;
+  ethAddress: string;
 }): Promise<string | null> {
   try {
-    const sdk = getVincentContractSdk();
-    const result = await sdk.getPermittedAppVersion({
+    const client = getClient({ signer: readOnlySigner });
+
+    const version = await client.getPermittedAppVersionForPkp({
       pkpEthAddress: params.ethAddress,
-      appId: params.appId,
+      appId: params.appId, // Remove .toString() - SDK expects number
     });
-    return result || null;
+    //@ts-ignore
+    return version || null;
   } catch (error) {
     return null;
   }
